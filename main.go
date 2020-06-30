@@ -117,12 +117,10 @@ func main() {
 	u.Timeout = 60
 	updates, err := bot.GetUpdatesChan(u)
 
-	// tgclient := AlertService{Bot: bot, ReceiverIDs: chatIDs}
-
 	// Run the telegram bot
 	go runTelegramBot(updates, bot, client)
 	// Run updating and making bookings
-	// go runUpdateBookings(client, bot)
+	go runUpdateBookings(client, bot)
 	select{}
 }
 
@@ -163,6 +161,7 @@ func runTelegramBot(updates tgbotapi.UpdatesChannel, bot *tgbotapi.BotAPI, clien
 				case removeDateTimeMatch.MatchString(update.CallbackQuery.Data):
 					re := regexp.MustCompile(`\d{2}\/\d{2} .{5} .* .*$`)
 					toMatchDate,_ := time.Parse("02/01 (Mon) 3:04 PM", re.FindString(update.CallbackQuery.Data))
+					toMatchDate = toMatchDate.AddDate(time.Now().Year(), 0, 0)
 					for i, book := range toBook{
 						if book.ChatID == update.CallbackQuery.Message.Chat.ID && book.Date == toMatchDate {
 							toBook = append(toBook[:i], toBook[i+1:]...)
